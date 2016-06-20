@@ -46,7 +46,6 @@ def make_app(prefix):
     mod = getters.get_github_module(
         'cacahootie', 'modly', 'test/modly-test/models.py', 'models'
     )
-    print dir(mod)
     return mod.app
 
 
