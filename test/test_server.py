@@ -16,6 +16,6 @@ class TestServer(unittest.TestCase):
         self.assertEqual(resp.status_code, 404)
 
     def test_real_path(self):
-        resp = self.c.get('/gobbeldy/helloworld/')
+        resp = self.c.get('/hello/helloworld/')
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.data, 'hello world')

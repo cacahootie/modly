@@ -1,5 +1,5 @@
 
-import os, base64, imp, sys, string, random
+import os, base64, imp, sys, string, random, json
 
 from github import Github
 
@@ -14,6 +14,9 @@ def get_github_string(user, repo, fname):
         g.get_repo('{}/{}'.format(user, repo))\
             .get_contents(fname).content
     )
+
+def get_github_json(*args, **kwargs):
+    return json.loads(get_github_string(*args, **kwargs))
 
 def get_github_module(user, repo, fname, module_name=None):
     return get_module(

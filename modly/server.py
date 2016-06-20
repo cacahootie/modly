@@ -7,13 +7,15 @@ import getters
 
 class PathDispatcher(object):
 
-    def __init__(self, create_app):
-        self.create_app = create_app
+    def __init__(self, cfg):
+        self.cfg = { x['prefix']: x for x in cfg }
         self.default_app = default_app()
         self.lock = Lock()
         self.instances = {}
 
     def get_application(self, prefix):
+        if prefix not in self.cfg:
+            return
         with self.lock:
             app = self.instances.get(prefix)
             if app is None:
@@ -21,6 +23,12 @@ class PathDispatcher(object):
                 if app is not None:
                     self.instances[prefix] = app
             return app
+
+    def create_app(self, prefix):
+        mod = getters.get_github_module(
+            'cacahootie', 'modly', 'test/modly-test/models.py', 'models'
+        )
+        return getattr(mod, 'app')
 
     def __call__(self, environ, start_response):
         app = self.get_application(peek_path_info(environ))
@@ -42,12 +50,8 @@ def default_app():
     return app
 
 
-def make_app(prefix):
-    mod = getters.get_github_module(
-        'cacahootie', 'modly', 'test/modly-test/models.py', 'models'
-    )
-    return mod.app
-
-
 def get_instance():
-    return PathDispatcher(make_app)
+    cfg = getters.get_github_json(
+        'cacahootie', 'modly', 'test/modly-test/config.json'
+    )
+    return PathDispatcher([cfg])
