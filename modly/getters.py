@@ -12,7 +12,7 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
 def get_github_string(user, repo, fname):
     return base64.b64decode(
         g.get_repo('{}/{}'.format(user, repo))\
-            .get_contents('test/tmod.py').content
+            .get_contents(fname).content
     )
 
 def get_github_module(user, repo, fname, module_name=None):
