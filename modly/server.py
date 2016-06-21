@@ -26,10 +26,13 @@ class PathDispatcher(object):
             return app
 
     def create_app(self, prefix):
+        cfg = self.cfg[prefix]
+        main = cfg['main'].split('.')
+        modpath = '/'.join(main[:-1]) + '.py'
         mod = getters.get_github_module(
-            'cacahootie', 'modly-test', 'models.py', 'models'
+            cfg['user'], cfg['repo'], modpath, main[-2]
         )
-        return getattr(mod, 'app')
+        return getattr(mod, main[-1])
 
     def __call__(self, environ, start_response):
         app = self.get_application(peek_path_info(environ))
@@ -50,6 +53,7 @@ def default_app():
 
     return app
 
+
 def process_config(user, repo):
     config = getters.get_github_json(user, repo, 'config.json')
     if config is None:
@@ -57,8 +61,9 @@ def process_config(user, repo):
     config.update({
         "user": user,
         "repo": repo
-    })
+    }) # i wish the impossible wish to update and return in a single exp...
     return config
+
 
 def process_whitelist(user, repo):
     whitelist = getters.get_github_json(user, repo, 'whitelist.json')

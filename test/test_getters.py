@@ -21,6 +21,7 @@ class TestImport(unittest.TestCase):
         )
         self.assertEqual(testmod.a, 11)
         self.assertEqual(testmod.b, 12)
+        self.assertEqual(testmod.__name__, 'tmod')
 
     def test_github_json(self):
         testobj = getters.get_github_json(
