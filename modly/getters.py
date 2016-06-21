@@ -11,16 +11,16 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
 def get_github_string(user, repo, fname, branch=None):
-    return base64.b64decode(
-        g.get_repo('{}/{}'.format(user, repo))\
-            .get_contents(fname, ref=branch or 'master').content
-    )
+    try:
+        return base64.b64decode(
+            g.get_repo('{}/{}'.format(user, repo))\
+                .get_contents(fname, ref=branch or 'master').content
+        )
+    except github.GithubException:
+        return
 
 def get_github_json(*args, **kwargs):
-    try:
-        return json.loads(get_github_string(*args, **kwargs))
-    except github.GithubException:
-        return None
+    return json.loads(get_github_string(*args, **kwargs))
 
 def get_github_module(user, repo, fname, module_name=None, branch=None):
     return get_module(
@@ -29,6 +29,8 @@ def get_github_module(user, repo, fname, module_name=None, branch=None):
     )
 
 def get_module(module_string, module_name=None):
+    if module_string is None:
+        return
     new_module = imp.new_module(module_name if module_name else id_generator())
     bc = compile(module_string, '<string>', 'exec')
     exec bc in new_module.__dict__
