@@ -27,7 +27,7 @@ class PathDispatcher(object):
 
     def create_app(self, prefix):
         mod = getters.get_github_module(
-            'cacahootie', 'modly', 'test/modly-test/models.py', 'models'
+            'cacahootie', 'modly-test', 'models.py', 'models'
         )
         return getattr(mod, 'app')
 
@@ -50,11 +50,30 @@ def default_app():
 
     return app
 
+def process_config(user, repo):
+    config = getters.get_github_json(user, repo, 'config.json')
+    if config is None:
+        return
+    config.update({
+        "user": user,
+        "repo": repo
+    })
+    return config
+
+def process_whitelist(user, repo):
+    whitelist = getters.get_github_json(user, repo, 'whitelist.json')
+    if whitelist is None:
+        return
+    return [
+        process_config(**i)
+        for i in whitelist
+    ]
+
 
 def get_instance(user=None, repo=None):
     if user is None:
         user = user or os.environ.get('GH_USER') or 'cacahootie'
-        repo = repo or os.environ.get('GH_REPO') or 'modly'
-    cfg = getters.get_github_json(user, repo, 'whitelist.json') \
-        or getters.get_github_json(user, repo, 'config.json')
-    return PathDispatcher([cfg])
+        repo = repo or os.environ.get('GH_REPO') or 'modly-test'
+    cfg = process_whitelist(user, repo)\
+        or [process_config(user, repo)]
+    return PathDispatcher(cfg)

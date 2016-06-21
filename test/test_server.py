@@ -9,7 +9,9 @@ import modly.server as server
 class TestServer(unittest.TestCase):
 
     def setUp(self):
-        self.c = Client(server.get_instance(), BaseResponse)
+        self.c = Client(
+            server.get_instance('cacahootie', 'modly-test'), BaseResponse
+        )
 
     def test_root(self):
         resp = self.c.get('/')

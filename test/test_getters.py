@@ -24,6 +24,6 @@ class TestImport(unittest.TestCase):
 
     def test_github_json(self):
         testobj = getters.get_github_json(
-            'cacahootie', 'modly', 'test/modly-test/config.json'
+            'cacahootie', 'modly-test', 'config.json'
         )
         self.assertEqual(testobj['prefix'], 'hello')
