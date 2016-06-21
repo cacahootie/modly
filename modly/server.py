@@ -4,13 +4,13 @@ from threading import Lock
 from flask import Flask
 from werkzeug.wsgi import pop_path_info, peek_path_info
 
-import getters
+import getters, fallback
 
 class PathDispatcher(object):
 
     def __init__(self, cfg):
         self.cfg = { x['prefix']: x for x in cfg }
-        self.default_app = default_app()
+        self.default_app = fallback.default_app
         self.lock = Lock()
         self.instances = {}
 
@@ -41,17 +41,6 @@ class PathDispatcher(object):
         else:
             app = self.default_app
         return app(environ, start_response)
-
-
-def default_app():
-    app = Flask('modly_fallback')
-
-    @app.route('/', defaults={'path': ''})
-    @app.route('/<path:path>')
-    def catch_all(path):
-        return "Sorry, but there's nothing there: {}".format(path), 404
-
-    return app
 
 
 def process_config(user, repo):
