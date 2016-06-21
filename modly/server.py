@@ -10,7 +10,8 @@ from configurator import process_config, process_whitelist
 
 class PathDispatcher(object):
 
-    def __init__(self, cfg):
+    def __init__(self, cfg, nocache=False):
+        self.nocache = nocache
         self.cfg = { x['prefix']: x for x in cfg }
         self.default_app = fallback.default_app
         self.lock = Lock()
@@ -21,6 +22,14 @@ class PathDispatcher(object):
         if prefix not in self.cfg:
             return None, None
         branch = peek_path_info(environ)
+        if self.nocache:
+            app = self.create_app(prefix, branch)
+            if app[0] is not None:
+                pop_path_info(environ)
+                return app
+            else:
+                return self.create_app(prefix)
+
         with self.lock:
             if (prefix, branch) not in self.instances and prefix not in self.instances:
                 app = self.create_app(prefix, branch)
@@ -60,10 +69,12 @@ class PathDispatcher(object):
         return app(environ, start_response)
 
 
-def get_instance(user=None, repo=None):
+def get_instance(user=None, repo=None, nocache=False):
     if user is None:
         user = user or os.environ.get('GH_USER') or 'cacahootie'
         repo = repo or os.environ.get('GH_REPO') or 'modly-test'
+    if os.environ.get('NOCACHE'):
+        nocache = True
     cfg = process_whitelist(user, repo)\
         or process_config(user, repo)
-    return PathDispatcher(cfg)
+    return PathDispatcher(cfg, nocache)

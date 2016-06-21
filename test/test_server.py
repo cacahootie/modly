@@ -6,12 +6,8 @@ from werkzeug.wrappers import BaseResponse
 
 import modly.server as server
 
-class TestServer(unittest.TestCase):
 
-    def setUp(self):
-        self.c = Client(
-            server.get_instance('cacahootie', 'modly-test'), BaseResponse
-        )
+class _basetest(object):
 
     def test_root(self):
         resp = self.c.get('/')
@@ -31,3 +27,19 @@ class TestServer(unittest.TestCase):
         resp = self.c.get('/echo/echo?fred=rogers')
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.data, '{\n  "fred": "rogers"\n}\n')
+
+
+class TestServer(unittest.TestCase, _basetest):
+
+    def setUp(self):
+        self.c = Client(
+            server.get_instance('cacahootie', 'modly-test'), BaseResponse
+        )
+
+
+class TestNocache(unittest.TestCase, _basetest):
+
+    def setUp(self):
+        self.c = Client(
+            server.get_instance('cacahootie', 'modly-test', True), BaseResponse
+        )
