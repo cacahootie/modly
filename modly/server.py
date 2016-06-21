@@ -1,3 +1,4 @@
+import os
 from threading import Lock
 
 from flask import Flask
@@ -50,8 +51,10 @@ def default_app():
     return app
 
 
-def get_instance():
-    cfg = getters.get_github_json(
-        'cacahootie', 'modly', 'test/modly-test/config.json'
-    )
+def get_instance(user=None, repo=None):
+    if user is None:
+        user = user or os.environ.get('GH_USER') or 'cacahootie'
+        repo = repo or os.environ.get('GH_REPO') or 'modly'
+    cfg = getters.get_github_json(user, repo, 'whitelist.json') \
+        or getters.get_github_json(user, repo, 'config.json')
     return PathDispatcher([cfg])

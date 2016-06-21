@@ -1,6 +1,7 @@
 
 import os, base64, imp, sys, string, random, json
 
+import github
 from github import Github
 
 here = os.path.dirname(os.path.abspath(__file__))
@@ -16,7 +17,10 @@ def get_github_string(user, repo, fname):
     )
 
 def get_github_json(*args, **kwargs):
-    return json.loads(get_github_string(*args, **kwargs))
+    try:
+        return json.loads(get_github_string(*args, **kwargs))
+    except github.GithubException:
+        return None
 
 def get_github_module(user, repo, fname, module_name=None):
     return get_module(
