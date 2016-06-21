@@ -18,11 +18,11 @@ class TestServer(unittest.TestCase):
         self.assertEqual(resp.status_code, 404)
 
     def test_real_path(self):
-        resp = self.c.get('/hello/helloworld/')
+        resp = self.c.get('/hello/master/helloworld/')
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.data, 'hello world')
 
     def test_echo(self):
-        resp = self.c.get('/echo/?fred=rogers')
+        resp = self.c.get('/echo/master/?fred=rogers')
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.data, '{"fred": "rogers"}')
