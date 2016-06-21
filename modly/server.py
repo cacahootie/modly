@@ -16,7 +16,7 @@ class PathDispatcher(object):
 
     def get_application(self, prefix):
         if prefix not in self.cfg:
-            return
+            return None, None
         with self.lock:
             app = self.instances.get(prefix)
             if app is None:
@@ -32,10 +32,10 @@ class PathDispatcher(object):
         mod = getters.get_github_module(
             cfg['user'], cfg['repo'], modpath, main[-2]
         )
-        return getattr(mod, main[-1])
+        return mod, getattr(mod, main[-1]) # flask-voodoo!!!
 
     def __call__(self, environ, start_response):
-        app = self.get_application(peek_path_info(environ))
+        mod, app = self.get_application(peek_path_info(environ))
         if app is not None:
             pop_path_info(environ)
         else:
@@ -55,24 +55,26 @@ def default_app():
 
 
 def process_config(user, repo):
+    def _process_config(config):
+        config.update({
+            "user": user,
+            "repo": repo
+        }) # i wish the impossible wish to update and return in a single exp...
+        return config
+
     config = getters.get_github_json(user, repo, 'config.json')
     if config is None:
         return
-    config.update({
-        "user": user,
-        "repo": repo
-    }) # i wish the impossible wish to update and return in a single exp...
-    return config
-
+    if isinstance(config, list):
+        return [ _process_config(x) for x in config ]
+    return [_process_config(x)]
+    
 
 def process_whitelist(user, repo):
     whitelist = getters.get_github_json(user, repo, 'whitelist.json')
     if whitelist is None:
         return
-    return [
-        process_config(**i)
-        for i in whitelist
-    ]
+    return reduce(lambda x, y: x + y, ( process_config(**i) for i in whitelist ))
 
 
 def get_instance(user=None, repo=None):
@@ -80,5 +82,5 @@ def get_instance(user=None, repo=None):
         user = user or os.environ.get('GH_USER') or 'cacahootie'
         repo = repo or os.environ.get('GH_REPO') or 'modly-test'
     cfg = process_whitelist(user, repo)\
-        or [process_config(user, repo)]
+        or process_config(user, repo)
     return PathDispatcher(cfg)

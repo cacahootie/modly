@@ -27,4 +27,4 @@ class TestImport(unittest.TestCase):
         testobj = getters.get_github_json(
             'cacahootie', 'modly-test', 'config.json'
         )
-        self.assertEqual(testobj['prefix'], 'hello')
+        self.assertEqual(testobj[0]['prefix'], 'hello')

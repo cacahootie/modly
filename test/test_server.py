@@ -21,3 +21,8 @@ class TestServer(unittest.TestCase):
         resp = self.c.get('/hello/helloworld/')
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.data, 'hello world')
+
+    def test_echo(self):
+        resp = self.c.get('/echo/?fred=rogers')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.data, '{"fred": "rogers"}')
